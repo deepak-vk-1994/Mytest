@@ -231,13 +231,14 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 			(*it).mom_x_flux = ((*it).area) * (rhoR*a_face*C_LS_plus*uR + rhoL*a_face*C_LS_minus*uL + D_plus*pR*((*it).nx) + D_minus*pL*((*it).nx) );
 			(*it).mom_y_flux = ((*it).area) * (rhoR*a_face*C_LS_plus*vR + rhoL*a_face*C_LS_minus*vL + D_plus*pR*((*it).ny) + D_minus*pL*((*it).ny) );
 			(*it).energy_flux = ((*it).area) * (rhoR*a_face*C_LS_plus*E_t_plus + rhoL*a_face*C_LS_minus*E_t_minus + D_plus*pR*0.0 + D_minus*pL*0.0 );
-
+            #ifndef VISCOUS
 			if ((*it).marker == TOP || (*it).marker == BOTTOM) {
 			 	(*it).mass_flux = 0.0;
 			 	(*it).mom_x_flux = ((*it).area) * (D_plus*pR*((*it).nx) + D_minus*pL*((*it).nx) );
 			 	(*it).mom_y_flux = ((*it).area) * (D_plus*pR*((*it).ny) + D_minus*pL*((*it).ny) );
 			 	(*it).energy_flux = 0.0;
 			 }
+            #endif
 
 		#endif	
 
