@@ -1,0 +1,22 @@
+Pressure (stag):
+101325
+Mach no (inf) :
+0.2
+Density (stag):
+1.225
+CFL :
+0.2
+Reference Temperature :
+273.16
+Reference Viscosity:
+0.00001714
+Prandlt Number :
+0.72
+Number of Triangles (if known) :
+6017
+Number of Points (if known) :
+3154
+Simulation Time:
+500000
+Mach Switch (0 - Subsonic 1 - Supersonic) :
+0
