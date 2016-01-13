@@ -39,7 +39,7 @@ void printFlow(std::vector<Point > &points, std::vector<Element > &elements, int
 	file<<std::endl;
 	//DATA
 	file<<"CELL_DATA "<<N_elem<<std::endl;
-/*	file<<"SCALARS pressure DOUBLE"<<std::endl;
+	file<<"SCALARS pressure DOUBLE"<<std::endl;
 	file<<"LOOKUP_TABLE default"<<std::endl;
 	for(int i = 0; i < N_elem; i++) {
 		file << elements[i].p<<std::endl;
@@ -52,7 +52,7 @@ void printFlow(std::vector<Point > &points, std::vector<Element > &elements, int
 		file << elements[i].rho<<std::endl;
 	}
 	file<<std::endl;
-*/
+
 	file<<"VECTORS velocity DOUBLE"<<std::endl;
 	for(int i = 0; i < N_elem; i++) {
 		file << elements[i].u<<" "<<elements[i].v<<" "<<elements[i].w<<std::endl;

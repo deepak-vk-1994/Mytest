@@ -43,9 +43,9 @@ void setInputVariables() {
 	SIMULATION_TIME = (int)variables[9];
 	mach_switch = (int)variables[10];
 
-	p_inf = p0/(pow((1 + (gam-1)*0.5*M*M),(gam/(gam-1))));
-	rho_inf = rho0/(pow((1 + (gam-1)*0.5*M*M),(1/(gam-1))));
-	u_inf = M*sqrt(gam*p_inf/rho_inf);
+	p_inf = 1013.25; //p0/(pow((1 + (gam-1)*0.5*M*M),(gam/(gam-1))));
+	rho_inf = 0.011699;//rho0/(pow((1 + (gam-1)*0.5*M*M),(1/(gam-1))));
+	u_inf = 139.28;//M*sqrt(gam*p_inf/rho_inf);
 	
 	double T_inf = p_inf/(rho_inf*R);
 	double visc_inf = ( mu_ref * pow((T_inf/T_ref),1.5) * (T_ref + S1)/(T_inf + S1) );
@@ -57,7 +57,7 @@ void setInputVariables() {
 
 
 void populateFromSTL(std::vector<Point > &points, std::vector<Element > &elements) {
-	ifstream file("./Grids/ramp.txt");
+	ifstream file("./Grids/check.txt");
 	double coord1,coord2,coord3;
 
 	Point pt;
@@ -246,9 +246,9 @@ void storeNeighbours(std::vector<Point > &points, std::vector<Element > &element
 		ofstream file2("./Debug/faces.txt");
 		for (std::vector<Face >::iterator it = faces.begin(); it != faces.end(); it++) {
 //			file2 << (*it).vertex1 <<" "<<(*it).vertex2<<" "<<(*it).elementL<<" "<<(*it).elementR<<" "<<(*it).marker<<std::endl;
-			if ((*it).marker == LEFT || (*it).marker == RIGHT)
-		//	if ((*it).marker == TOP || (*it).marker == BOTTOM)
-//			if ((*it).marker == RIGHT))
+		//	if ((*it).marker == LEFT || (*it).marker == RIGHT)
+		//	if ((*it).marker == TOP || (*it).marker == BOTTOM || (*it).marker == LEFT || (*it).marker == RIGHT)
+			if ((*it).marker == RIGHT)
 				file2 << points[(*it).vertex1].x<<" "<< points[(*it).vertex1].y <<" "<<(*it).elementL<<" "<<(*it).elementR<<" "<<(*it).marker<<std::endl;
 		}
 
@@ -323,11 +323,11 @@ void initializeGeometery(std::vector<Point > &points, std::vector<Element > &ele
 
 		(*it).area = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) + (z2-z1)*(z2-z1));
 		//facet normal : 0 0 1
-//		(*it).nx = -(y1 - y2)/sqrt((y1-y2)*(y1-y2) + (x1-x2)*(x1-x2));
-//		(*it).ny = (x1 - x2)/sqrt((y1-y2)*(y1-y2) + (x1-x2)*(x1-x2));
+		(*it).nx = -(y1 - y2)/sqrt((y1-y2)*(y1-y2) + (x1-x2)*(x1-x2));
+		(*it).ny = (x1 - x2)/sqrt((y1-y2)*(y1-y2) + (x1-x2)*(x1-x2));
 		//facet normal : 0 0 -1
-		(*it).nx = (y1 - y2)/sqrt((y1-y2)*(y1-y2) + (x1-x2)*(x1-x2));
-		(*it).ny = -(x1 - x2)/sqrt((y1-y2)*(y1-y2) + (x1-x2)*(x1-x2));
+		// (*it).nx = (y1 - y2)/sqrt((y1-y2)*(y1-y2) + (x1-x2)*(x1-x2));
+		// (*it).ny = -(x1 - x2)/sqrt((y1-y2)*(y1-y2) + (x1-x2)*(x1-x2));
 
 		(*it).xmp = (x1 + x2)/2.0;
 		(*it).ymp = (y1 + y2)/2.0;

@@ -5,10 +5,12 @@
 
 //Flux splitting scheme
 #define LOUISTEFFAN
-#define FIRSTORDER
-//#define SECONDORDER
-//#define VISCOUS
+//#define FIRSTORDER
+#define SECONDORDER
+#define VISCOUS
 
+//Time integration
+#define RK4
 
 enum type{INTERIOR,LEFT,RIGHT,TOP,BOTTOM,OTHER,GHOST};
 enum mach{SUBSONIC,SUPERSONIC};
@@ -35,7 +37,7 @@ double ytop = 2.0;
 double D=1;
 double xleft = 0.0;
 double xright = 1.0;
-double ytop = 0.18;
+double ytop = 0.2;
 double ybottom = 0.0;
 
 /*

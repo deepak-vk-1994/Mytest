@@ -13,12 +13,14 @@ class Element {
 		int vertex[3]; //Vertex index
 		int face[3];
 		double p,u,v,w,rho;
+		double p_temp,u_temp,v_temp,w_temp,rho_temp;
 		double volume,xc,yc;
 		double gradvel[4];
 		double gradp[2];
 		double gradrho[2];
 		double gradtemp[2];
 		double phi[4]; // Limiter
+		double E[4][4],residue[4];
 
 		Element() {
 			p = p_inf;
@@ -36,10 +38,13 @@ class Element {
 			for (int i = 0; i < 4; i++) {
 				gradvel[i] = 0.0;
 				phi[i] = 0.0;
+				residue[i] = 0.0;
+				for (int j = 0; j < 4; j++) E[i][j] = 0.0;
 			}
 			gradtemp[0] = gradtemp[1] = 0.0;
 			gradp[0] = gradp[1] = 0.0;
 			gradrho[0] = gradrho[1] = 0.0;
+			
 		}
 
 		//Member Fns

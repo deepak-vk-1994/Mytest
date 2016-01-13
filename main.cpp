@@ -33,7 +33,7 @@ int main() {
 		calFlux(points,elements,faces);
 		updateState(points,elements,faces,fileres);
 
-		if (t%5000 == 0) {
+		if (t%1000 == 0) {
 			printFlow(points,elements,t);
 			printSurfaceP(points,elements,faces,t);
 		}

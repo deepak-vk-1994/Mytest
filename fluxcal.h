@@ -231,14 +231,15 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 			(*it).mom_x_flux = ((*it).area) * (rhoR*a_face*C_LS_plus*uR + rhoL*a_face*C_LS_minus*uL + D_plus*pR*((*it).nx) + D_minus*pL*((*it).nx) );
 			(*it).mom_y_flux = ((*it).area) * (rhoR*a_face*C_LS_plus*vR + rhoL*a_face*C_LS_minus*vL + D_plus*pR*((*it).ny) + D_minus*pL*((*it).ny) );
 			(*it).energy_flux = ((*it).area) * (rhoR*a_face*C_LS_plus*E_t_plus + rhoL*a_face*C_LS_minus*E_t_minus + D_plus*pR*0.0 + D_minus*pL*0.0 );
-            #ifndef VISCOUS
+			
+        /*    #ifndef VISCOUS
 			if ((*it).marker == TOP || (*it).marker == BOTTOM) {
 			 	(*it).mass_flux = 0.0;
 			 	(*it).mom_x_flux = ((*it).area) * (D_plus*pR*((*it).nx) + D_minus*pL*((*it).nx) );
 			 	(*it).mom_y_flux = ((*it).area) * (D_plus*pR*((*it).ny) + D_minus*pL*((*it).ny) );
 			 	(*it).energy_flux = 0.0;
 			 }
-            #endif
+            #endif*/
 
 		#endif	
 
@@ -261,15 +262,15 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 			dTdx = 0.5 * (elements[EL].gradtemp[0] + elements[ER].gradtemp[0]);
 			dTdy = 0.5 * (elements[EL].gradtemp[1] + elements[ER].gradtemp[1]);
 
-			if ((*it).marker == INTERIOR) {
+//			if ((*it).marker == INTERIOR) {
 				dudx_f = dudx + (uL - uR - dudx*(xL-xR) - dudy*(yL-yR))*(xL-xR)/(r*r);
 				dudy_f = dudy + (uL - uR - dudx*(xL-xR) - dudy*(yL-yR))*(yL-yR)/(r*r);
 				dvdx_f = dvdx + (vL - vR - dvdx*(xL-xR) - dvdy*(yL-yR))*(xL-xR)/(r*r);
 				dvdy_f = dvdy + (vL - vR - dvdx*(xL-xR) - dvdy*(yL-yR))*(yL-yR)/(r*r);
 				dTdx_f = dTdx + (TL - TR - dTdx*(xL-xR) - dTdy*(yL-yR))*(xL-xR)/(r*r);
 				dTdy_f = dTdy + (TL - TR - dTdx*(xL-xR) - dTdy*(yL-yR))*(yL-yR)/(r*r);
-			}
-
+//			}
+/*
 			else {
 				dudx_f = (uL - uR)*(xL-xR)/(r*r);
 				dudy_f = (uL - uR)*(yL-yR)/(r*r);
@@ -278,7 +279,7 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 				dTdx_f = (TL - TR)*(xL-xR)/(r*r);
 				dTdy_f = (TL - TR)*(yL-yR)/(r*r);
 			}
-
+*/
 			txx = 2.0*mu*dudx_f - 2.0/3.0*mu*(dudx_f + dvdy_f);
 			tyy = 2.0*mu*dvdy_f - 2.0/3.0*mu*(dudx_f + dvdy_f);
 			txy = mu*(dudy_f + dvdx_f);
