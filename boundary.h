@@ -206,7 +206,8 @@ void getE(std::vector<Element > &elements, std::vector<Face > &faces,int index) 
 		if (index == 1) delta_t *= 1.0/2.0;
 		if (index == 2) delta_t *= 1.0;
 		if (index == 3) delta_t *= 1.0;	
-			
+		
+		//Modified RK4
 		// if (index == 0) delta_t *= 1.0/4.0;
 		// if (index == 1) delta_t *= 1.0/3.0;
 		// if (index == 2) delta_t *= 1.0/2.0;
@@ -281,7 +282,7 @@ void updateStateRK4(std::vector<Point > &points,std::vector<Element > &elements,
 	calFlux(points,elements,faces);
 	computeResidue(elements,faces);
 	getE(elements,faces,3);
-	// update(elements,faces,3);
+	// update(elements,faces,3);   //For modified RK4
 
 
 	for (int i = 0; i < N_elem; i++) {
