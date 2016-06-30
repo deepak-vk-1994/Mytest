@@ -1,0 +1,1 @@
+scp -r shashank@10.21.41.134:/media/data/shashank/Unstructured/turbulence/Grids/R4_E01.grd ./

@@ -1,0 +1,8 @@
+2D Unstructured Grid Solver
+- Second order in space, gradient based reconstruction with Venkatakrishnan
+  limiter
+- RK4 explicit time
+- SST turbulence model
+
+TODO
+- Automate boundary conditions

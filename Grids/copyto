@@ -1,0 +1,1 @@
+scp -r R4lowres.txt shashank@10.21.41.134:/media/data/shashank/Unstructured/turbulence/Grids/
