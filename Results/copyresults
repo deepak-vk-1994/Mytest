@@ -1,1 +1,0 @@
-scp -r shashank@10.21.41.134:/media/data/shashank/Unstructured/Results/*.vtk ./
