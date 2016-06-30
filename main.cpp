@@ -51,14 +51,13 @@ int main() {
 			updateStateRK4(points,elements,faces,fileres);
 		else
 			updateState(points,elements,faces,fileres);
-		if (t%10000 == 0) {
+		if (t%1000 == 0) {
 			printFlow(points,elements,t);
 			// printBLData(points,elements,faces,t);
 			printCP(points,elements,faces,t);
 			extractFromLine(points,elements,faces);
 			printYPlus(points,elements,faces,t);
 		}
-
 		if (t%1000 == 0) {
 			calLiftAndDrag(points,elements,faces,fileLD);
 			calLiftAndDragUsingSurf(points,elements,faces,fileLDSurf);
