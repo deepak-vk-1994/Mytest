@@ -51,7 +51,7 @@ int main() {
 			updateStateRK4(points,elements,faces,fileres);
 		else
 			updateState(points,elements,faces,fileres);
-		if (t%1000 == 0) {
+		if (t%10000 == 0) {
 			printFlow(points,elements,t);
 			// printBLData(points,elements,faces,t);
 			printCP(points,elements,faces,t);
