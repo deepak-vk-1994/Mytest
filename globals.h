@@ -46,9 +46,10 @@ double S1 = 110.4;
 double Pr = 0.72;
 
 int BCL,BCR,BCT,BCB,BCO;
-std::vector<int> bcs, bcns;
-std::vector<int>::iterator bcs_it, bcns_it;
-
+std::vector<int> bcs;
+std::vector<int>::iterator bcs_it;
+std::vector<int> bcns;
+std::vector<int>::iterator bcns_it;
 void setInputVariables() {
 	std::ifstream file("./Input.txt");
 	std::string line;

@@ -190,7 +190,6 @@ void computeResidue(std::vector<Element > &elements,std::vector<Face > &faces) {
 
 void getE(std::vector<Element > &elements, std::vector<Face > &faces,int index) {
 	double delta_t = 0.0;
-	calLocalTimeStep(elements,faces);	
 
 	for (int i = 0; i < N_elem; i++) {
 		if (index == 0) {
@@ -202,7 +201,16 @@ void getE(std::vector<Element > &elements, std::vector<Face > &faces,int index) 
 			elements[i].omega_temp = elements[i].omega;
 		}
 		delta_t = elements[i].delta_t;
-		if (index != 2) delta_t *= 0.5;
+		
+		if (index == 0) delta_t *= 1.0/2.0;
+		if (index == 1) delta_t *= 1.0/2.0;
+		if (index == 2) delta_t *= 1.0;
+		if (index == 3) delta_t *= 1.0;	
+			
+		// if (index == 0) delta_t *= 1.0/4.0;
+		// if (index == 1) delta_t *= 1.0/3.0;
+		// if (index == 2) delta_t *= 1.0/2.0;
+		// if (index == 3) delta_t *= 1.0;
 
 		elements[i].E[index][0] = (-1.0*delta_t/elements[i].volume) * elements[i].residue[0];
 		elements[i].E[index][1] = (-1.0*delta_t/elements[i].volume) * (-1.0*elements[i].u_temp*elements[i].residue[0]/elements[i].rho_temp + elements[i].residue[1]/elements[i].rho_temp);
@@ -245,23 +253,23 @@ void update(std::vector<Element > &elements,std::vector<Face > &faces,int stage)
 }
 
 void updateStateRK4(std::vector<Point > &points,std::vector<Element > &elements,std::vector<Face > &faces,std::ofstream &file) {
-	double delta_t,resnorm_laminar,resnorm_turbulent;
-	resnorm_laminar = resnorm_turbulent = delta_t = 0.0;
+	double resnorm_laminar,resnorm_turbulent;
+	resnorm_laminar = resnorm_turbulent = 0.0;
 	//Stage 1
+	calLocalTimeStep(elements,faces);	
+
 	computeResidue(elements,faces);
 	getE(elements,faces,0);
-
-	//Stage 2
 	update(elements,faces,0);
 
-	//Stage 3
+	//Stage 2
 	applyBC(points,elements,faces);
 	calFlux(points,elements,faces);
 	computeResidue(elements,faces);
 	getE(elements,faces,1);
 	update(elements,faces,1);
 
-	//Stage 4
+	//Stage 3
 	applyBC(points,elements,faces);
 	calFlux(points,elements,faces);
 	computeResidue(elements,faces);
@@ -273,16 +281,18 @@ void updateStateRK4(std::vector<Point > &points,std::vector<Element > &elements,
 	calFlux(points,elements,faces);
 	computeResidue(elements,faces);
 	getE(elements,faces,3);
+	// update(elements,faces,3);
+
 
 	for (int i = 0; i < N_elem; i++) {
-		elements[i].rho = elements[i].rho_temp + 2.0*(1.0/6.0*elements[i].E[0][0] + 1.0/3.0*elements[i].E[1][0] + 1.0/3.0*elements[i].E[2][0] + 1.0/6.0*elements[i].E[3][0]);
-		elements[i].u = elements[i].u_temp + 2.0*(1.0/6.0*elements[i].E[0][1] + 1.0/3.0*elements[i].E[1][1] + 1.0/3.0*elements[i].E[2][1] + 1.0/6.0*elements[i].E[3][1]);
-		elements[i].v = elements[i].v_temp + 2.0*(1.0/6.0*elements[i].E[0][2] + 1.0/3.0*elements[i].E[1][2] + 1.0/3.0*elements[i].E[2][2] + 1.0/6.0*elements[i].E[3][2]);
-		elements[i].p = elements[i].p_temp + 2.0*(1.0/6.0*elements[i].E[0][3] + 1.0/3.0*elements[i].E[1][3] + 1.0/3.0*elements[i].E[2][3] + 1.0/6.0*elements[i].E[3][3]);
+		elements[i].rho = elements[i].rho_temp + (1.0/6.0*elements[i].E[0][0] + 1.0/3.0*elements[i].E[1][0] + 1.0/3.0*elements[i].E[2][0] + 1.0/6.0*elements[i].E[3][0]);
+		elements[i].u = elements[i].u_temp + (1.0/6.0*elements[i].E[0][1] + 1.0/3.0*elements[i].E[1][1] + 1.0/3.0*elements[i].E[2][1] + 1.0/6.0*elements[i].E[3][1]);
+		elements[i].v = elements[i].v_temp + (1.0/6.0*elements[i].E[0][2] + 1.0/3.0*elements[i].E[1][2] + 1.0/3.0*elements[i].E[2][2] + 1.0/6.0*elements[i].E[3][2]);
+		elements[i].p = elements[i].p_temp + (1.0/6.0*elements[i].E[0][3] + 1.0/3.0*elements[i].E[1][3] + 1.0/3.0*elements[i].E[2][3] + 1.0/6.0*elements[i].E[3][3]);
 		
 		if (turbulence != NO_TURB) {
-			elements[i].k = elements[i].k_temp + 2.0*(1.0/6.0*elements[i].E[0][4] + 1.0/3.0*elements[i].E[1][4] + 1.0/3.0*elements[i].E[2][4] + 1.0/6.0*elements[i].E[3][4]);
-			elements[i].omega = elements[i].omega_temp + 2.0*(1.0/6.0*elements[i].E[0][5] + 1.0/3.0*elements[i].E[1][5] + 1.0/3.0*elements[i].E[2][5] + 1.0/6.0*elements[i].E[3][5]);
+			elements[i].k = elements[i].k_temp + (1.0/6.0*elements[i].E[0][4] + 1.0/3.0*elements[i].E[1][4] + 1.0/3.0*elements[i].E[2][4] + 1.0/6.0*elements[i].E[3][4]);
+			elements[i].omega = elements[i].omega_temp + (1.0/6.0*elements[i].E[0][5] + 1.0/3.0*elements[i].E[1][5] + 1.0/3.0*elements[i].E[2][5] + 1.0/6.0*elements[i].E[3][5]);
 
 			if (elements[i].k < 0) elements[i].k = DBL_EPSILON;
 			if (elements[i].omega < 0) {

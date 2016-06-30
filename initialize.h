@@ -170,16 +170,16 @@ void storeNeighbours(std::vector<Point > &points, std::vector<Element > &element
 					F.marker = LEFT;
 				else if( fabs(points[vertex1].x-xright) < DBL_EPSILON && fabs(points[vertex2].x-xright) < DBL_EPSILON ) 
 					F.marker = RIGHT;
-				// else if( fabs(points[vertex1].y-ytop) < DBL_EPSILON && fabs(points[vertex2].y-ytop) < DBL_EPSILON) 
-				// 	F.marker = TOP;
-				else if ((points[vertex1].y) > 0 && (points[vertex2].y) > 0)
+				else if( fabs(points[vertex1].y-ytop) < DBL_EPSILON && fabs(points[vertex2].y-ytop) < DBL_EPSILON) 
 					F.marker = TOP;
+				// else if ((points[vertex1].y) > 0 && (points[vertex2].y) > 0)
+				// 	F.marker = TOP;
 				// else if( fabs(points[vertex1].y-ybottom) < DBL_EPSILON && fabs(points[vertex2].y-ybottom) < DBL_EPSILON && (points[vertex1].x < 0.0 || points[vertex2].x < 0.0) )
 				// 	F.marker = OTHER;
-				// else if( fabs(points[vertex1].y-ybottom) < DBL_EPSILON && fabs(points[vertex2].y-ybottom) < DBL_EPSILON)
-				// 	F.marker = BOTTOM;
-				else 
+				else if( fabs(points[vertex1].y-ybottom) < DBL_EPSILON && fabs(points[vertex2].y-ybottom) < DBL_EPSILON)
 					F.marker = BOTTOM;
+				else 
+					F.marker = OTHER;
 
 				faces.push_back(F);
 				elements[i].face[j] = faceindex;
