@@ -141,16 +141,6 @@ inline void calLimitersFace(int elem_index, int face_index, std::vector<Point > 
 
 	xmc = points[faces[face_index].vertex1].x - elements[elem_index].xc;
 	ymc = points[faces[face_index].vertex1].y - elements[elem_index].yc;
-	distance1 = (xmc*xmc + ymc*ymc);
-
-	xmc = points[faces[face_index].vertex2].x - elements[elem_index].xc;
-	ymc = points[faces[face_index].vertex2].y - elements[elem_index].yc;
-	distance2 = (xmc*xmc + ymc*ymc);
-
-	if (distance1 > distance2) {
-		xmc = points[faces[face_index].vertex1].x - elements[elem_index].xc;
-		ymc = points[faces[face_index].vertex1].y - elements[elem_index].yc;
-	}
 
 	dot[0] = elements[elem_index].gradrho[0]*xmc + elements[elem_index].gradrho[1]*ymc;
 	dot[1] = elements[elem_index].gradu[0]*xmc + elements[elem_index].gradu[1]*ymc;
@@ -172,6 +162,32 @@ inline void calLimitersFace(int elem_index, int face_index, std::vector<Point > 
 			lim = 1.0;
 
 		phi[j] = lim;
+	}
+
+	xmc = points[faces[face_index].vertex2].x - elements[elem_index].xc;
+	ymc = points[faces[face_index].vertex2].y - elements[elem_index].yc;
+
+	dot[0] = elements[elem_index].gradrho[0]*xmc + elements[elem_index].gradrho[1]*ymc;
+	dot[1] = elements[elem_index].gradu[0]*xmc + elements[elem_index].gradu[1]*ymc;
+	dot[2] = elements[elem_index].gradv[0]*xmc + elements[elem_index].gradv[1]*ymc;
+	dot[3] = elements[elem_index].gradp[0]*xmc + elements[elem_index].gradp[1]*ymc;
+	dot[4] = elements[elem_index].gradk[0]*xmc + elements[elem_index].gradk[1]*ymc;
+	dot[5] = elements[elem_index].gradomega[0]*xmc + elements[elem_index].gradomega[1]*ymc;
+
+	for (int j = 0; j < 6; j++) {
+		delmax = qmax[j] - q[j];
+		delmin = qmin[j] - q[j];
+		if (dot[j] > 0)
+		 	lim =  ( ((delmax*delmax + epsilon) + 2*dot[j]*delmax)/(delmax*delmax + 2*dot[j]*dot[j] + delmax*dot[j] + epsilon) );
+
+		else if (dot[j] < 0)
+			lim =  ( ((delmin*delmin + epsilon) + 2*dot[j]*delmin)/(delmin*delmin + 2*dot[j]*dot[j] + delmin*dot[j] + epsilon) );
+
+		else
+			lim = 1.0;
+
+		if (lim < phi[j])
+			phi[j] = lim;
 	}
 }
 
@@ -303,24 +319,9 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 		
 		//Reconstruction of primitive variables
 		//First Order
-		/*calLimitersFace(EL,it - faces.begin(),points,elements,faces,phiL);
-		calLimitersFace(ER,it - faces.begin(),points,elements,faces,phiR);
 
-		xmcL = points[(*it).vertex1].x - elements[EL].xc; ymcL = points[(*it).vertex1].y - elements[EL].yc;
-		distance1 = xmcL*xmcL + ymcL*ymcL;
-		xmcL = points[(*it).vertex2].x - elements[EL].xc; ymcL = points[(*it).vertex2].y - elements[EL].yc;
-		distance2 = xmcL*xmcL + ymcL*ymcL;
-		if (distance1 < distance2) {
-			xmcL = points[(*it).vertex1].x - elements[EL].xc; ymcL = points[(*it).vertex1].y - elements[EL].yc;
-		}
-
-		xmcR = points[(*it).vertex1].x - elements[ER].xc; ymcR = points[(*it).vertex1].y - elements[ER].yc;
-		distance1 = xmcR*xmcR + ymcR*ymcR;
-		xmcR = points[(*it).vertex2].x - elements[ER].xc; ymcR = points[(*it).vertex2].y - elements[ER].yc;
-		distance2 = xmcR*xmcR + ymcR*ymcR;
-		if (distance1 < distance2) {
-			xmcR = points[(*it).vertex1].x - elements[ER].xc; ymcR = points[(*it).vertex1].y - elements[ER].yc;
-		}*/
+		// calLimitersFace(EL,it - faces.begin(),points,elements,faces,phiL);
+		// calLimitersFace(ER,it - faces.begin(),points,elements,faces,phiR);
 
 		if (ord_accuracy == FO) {
 			rhoL = elements[EL].rho;
