@@ -32,6 +32,8 @@ class Element {
 		double gradp[2];
 		double gradrho[2];
 		double gradtemp[2];
+		double gradentropy[2];
+
 		//turbulent gradients
 		double gradk[2],gradomega[2];
 
@@ -74,6 +76,7 @@ class Element {
 			gradrho[0] = gradrho[1] = 0.0;
 			gradk[0] = gradk[1] = 0.0;
 			gradomega[0] = gradomega[1] = 0.0;
+			gradentropy[0] = gradentropy[1] = 0.0;
 
 			F1 = mu_t = 0.0;
 			source1 = source2 = 0.0;
@@ -107,6 +110,10 @@ class Element {
 			return (2.0*rho*turbphi_omega2*(1.0/omega)*(gradk[0]*gradomega[0] + gradk[1]*gradomega[1]));
 		}
 
+		double calEntropy() {
+			return ( p/pow(rho,gam));
+		}
+		
 		void calTurbulentVisc() {
 			double arg2,F2,nu,vort;
 			nu = this->calViscosity()/rho;
@@ -135,7 +142,7 @@ struct Face {
 	//Turbulent fluxes
 
 	double nx,ny,nz,area,xmp,ymp;
-	double rho_face,u_face,v_face,p_face,T_face;  //For calculating gradients
+	double rho_face,u_face,v_face,p_face,T_face,en_face;  //For calculating gradients
 	//turbulence gradients
 	double k_face,omega_face;
 	Face() {
@@ -143,7 +150,7 @@ struct Face {
 		mass_flux = mom_x_flux = mom_y_flux = energy_flux = 0.0;
 		k_flux = omega_flux = 0.0;
 		nx = ny = nz = area = 0.0;
-		rho_face = u_face = v_face = p_face = T_face = k_face = omega_face = 0.0;
+		rho_face = u_face = v_face = p_face = T_face = k_face = omega_face = en_face = 0.0;
 		xmp = ymp = 0.0;
 		marker = INTERIOR;
 	}

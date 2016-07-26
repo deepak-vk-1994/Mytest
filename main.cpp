@@ -13,7 +13,7 @@ using namespace std;
 
 int main() {
 	setInputVariables();
-	vector<Point> points;  
+	vector<Point> points; 
 	vector<Element> elements; 
 	vector<Face> faces;
 
@@ -29,19 +29,29 @@ int main() {
 		fileLDSurf.open("./Results/LDSurf.txt");
 	}
 
-	populateFromSTL(points,elements);
-	storeNeighbours(points,elements,faces);
-	initializeGeometeryFaces(points,elements,faces);	
-	initializeGhostCells(points,elements,faces);
+	if (restart == 0) {
+		populateFromSTL(points,elements);
+		storeNeighbours(points,elements,faces);
+		initializeGeometeryFaces(points,elements,faces);	
+		initializeGhostCells(points,elements,faces);
+		initializeGeometeryElems(points,elements,faces);
+	}
+	else {
+		populateGrid(points,elements,faces);
+		storeNeighbours(points,elements,faces);
+		initializeGeometeryFaces(points,elements,faces);	
+		initializeGhostCells(points,elements,faces);
+		initializeGeometeryElems(points,elements,faces);
+	}
 
-	if (BCT == NO_SLIP)  bcns.push_back(TOP);
-	if (BCB == NO_SLIP)  bcns.push_back(BOTTOM);
-	if (BCO == NO_SLIP)  bcns.push_back(OTHER);
-	initializeGeometeryElems(points,elements,faces);
 
 	if (BCT == SLIP || BCT == NO_SLIP)  bcs.push_back(TOP);
 	if (BCB == SLIP || BCB == NO_SLIP)  bcs.push_back(BOTTOM);
 	if (BCO == SLIP || BCO == NO_SLIP)  bcs.push_back(OTHER);
+
+	if (BCT == NO_SLIP)  bcns.push_back(TOP);
+	if (BCB == NO_SLIP)  bcns.push_back(BOTTOM);
+	if (BCO == NO_SLIP)  bcns.push_back(OTHER);
 	
 	for (int t = 0; t < SIMULATION_TIME; t++) {	
 		global_time = t;
@@ -51,16 +61,17 @@ int main() {
 			updateStateRK4(points,elements,faces,fileres);
 		else
 			updateState(points,elements,faces,fileres);
-		if (t%10000 == 0) {
+		if (t%1000 == 0) {
 			printFlow(points,elements,t);
 			// printBLData(points,elements,faces,t);
-			printCP(points,elements,faces,t);
-			extractFromLine(points,elements,faces);
-			printYPlus(points,elements,faces,t);
+//			printCP(points,elements,faces,t);
+//			extractFromLine(points,elements,faces);
+//			printYPlus(points,elements,faces,t);
 		}
-		if (t%1000 == 0) {
-			calLiftAndDrag(points,elements,faces,fileLD);
-			calLiftAndDragUsingSurf(points,elements,faces,fileLDSurf);
-		}
+
+//		if (t%1000 == 0) {
+//			calLiftAndDrag(points,elements,faces,fileLD);
+//			calLiftAndDragUsingSurf(points,elements,faces,fileLDSurf);
+//		}
 	}
 }

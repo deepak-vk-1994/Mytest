@@ -9,6 +9,17 @@ void printFlow(std::vector<Point > &points, std::vector<Element > &elements, int
 	char name[250];
 	double machno;
 	ofstream file;
+	double printelem,printpts;
+
+	if (ghostoutput == 1) {
+		printelem = elements.size();
+		printpts = points.size();
+	}
+	else {
+		printelem = N_elem;
+		printpts = N_pts;
+	}
+
 	if (ord_accuracy == HO) 
 		sprintf(name,"./Results/BGhigh-%d.vtk",t);
 	else	
@@ -19,96 +30,105 @@ void printFlow(std::vector<Point > &points, std::vector<Element > &elements, int
 	file<<"Unstructured Grid for Triangles"<<std::endl;
 	file<<"ASCII"<<std::endl;
 	file<<"DATASET UNSTRUCTURED_GRID"<<std::endl;
-	file<<"POINTS "<<N_pts<<" DOUBLE"<<std::endl;
-	for (int i = 0; i < N_pts; i++) {
+	file<<"POINTS "<<printpts<<" DOUBLE"<<std::endl;
+	for (int i = 0; i < printpts; i++) {
 		file<<points[i].x<<" "<<points[i].y<<" "<<points[i].z<<std::endl;
 	}
 	file<<std::endl;
-	file<<"CELLS "<<N_elem<<" "<<N_elem*3.0 + N_elem<<std::endl;
-	for (int i = 0; i < N_elem; i++) {
+	file<<"CELLS "<<printelem<<" "<<printelem*3.0 + printelem<<std::endl;
+	for (int i = 0; i < printelem; i++) {
 		file <<"3 "<<elements[i].vertex[0]<<" "<<elements[i].vertex[1]<<" "<<elements[i].vertex[2]<<std::endl;
 	}
 	file<<std::endl;
-
-	file<<"CELL_TYPES "<<N_elem<<std::endl;
-	for (int i = 0; i < N_elem; i++) {
+	file<<"CELL_TYPES "<<printelem<<std::endl;
+	for (int i = 0; i < printelem; i++) {
 		file <<"5"<<std::endl;
 	}
 	file<<std::endl;
 	//DATA
-	file<<"CELL_DATA "<<N_elem<<std::endl;
+	file<<"CELL_DATA "<<printelem<<std::endl;
 	file<<"SCALARS mut/mu DOUBLE"<<std::endl;
 	file<<"LOOKUP_TABLE default"<<std::endl;
-	for(int i = 0; i < N_elem; i++) {
+	for(int i = 0; i < printelem; i++) {
 		file << elements[i].mu_t/elements[i].calViscosity()<<std::endl;
 	}
 	file<<std::endl;
 	file<<"SCALARS k DOUBLE"<<std::endl;
 	file<<"LOOKUP_TABLE default"<<std::endl;
-	for(int i = 0; i < N_elem; i++) {
+	for(int i = 0; i < printelem; i++) {
 		file << elements[i].k<<std::endl;
 	}
 	file<<std::endl;
 	file<<"SCALARS omega DOUBLE"<<std::endl;
 	file<<"LOOKUP_TABLE default"<<std::endl;
-	for(int i = 0; i < N_elem; i++) {
+	for(int i = 0; i < printelem; i++) {
 		file << elements[i].omega<<std::endl;
 	}
 	file<<std::endl;
 	file<<"SCALARS Ydist DOUBLE"<<std::endl;
 	file<<"LOOKUP_TABLE default"<<std::endl;
-	for(int i = 0; i < N_elem; i++) {
+	for(int i = 0; i < printelem; i++) {
 		file << elements[i].dist<<std::endl;
 	}
 	file<<std::endl;
 	file<<"SCALARS F1 DOUBLE"<<std::endl;
 	file<<"LOOKUP_TABLE default"<<std::endl;
-	for(int i = 0; i < N_elem; i++) {
+	for(int i = 0; i < printelem; i++) {
 		file << elements[i].F1<<std::endl;
 	}
 	file<<std::endl;
 	file<<"SCALARS vorticity DOUBLE"<<std::endl;
 	file<<"LOOKUP_TABLE default"<<std::endl;
-	for(int i = 0; i < N_elem; i++) {
+	for(int i = 0; i < printelem; i++) {
 		file << elements[i].calVorticity()<<std::endl;
 	}
 	file<<std::endl;
 	file<<"SCALARS pressure DOUBLE"<<std::endl;
 	file<<"LOOKUP_TABLE default"<<std::endl;
-	for(int i = 0; i < N_elem; i++) {
+	for(int i = 0; i < printelem; i++) {
 		file << elements[i].p<<std::endl;
 	}
 	file<<std::endl;
 	file<<"SCALARS density DOUBLE"<<std::endl;
 	file<<"LOOKUP_TABLE default"<<std::endl;
-	for(int i = 0; i < N_elem; i++) {
+	for(int i = 0; i < printelem; i++) {
 		file << elements[i].rho<<std::endl;
 	}
 	file<<std::endl;
 	file<<"SCALARS Machno DOUBLE"<<std::endl;
 	file<<"LOOKUP_TABLE default"<<std::endl;
-	for(int i = 0; i < N_elem; i++) {
+	for(int i = 0; i < printelem; i++) {
 		file << sqrt(elements[i].u*elements[i].u + elements[i].v*elements[i].v)/sqrt(gam*R*elements[i].calTemp())<<std::endl;
 	}
 	file<<std::endl;
 	file<<"SCALARS TotalP DOUBLE"<<std::endl;
 	file<<"LOOKUP_TABLE default"<<std::endl;
-	for(int i = 0; i < N_elem; i++) {
+	for(int i = 0; i < printelem; i++) {
 		machno = sqrt(elements[i].u*elements[i].u + elements[i].v*elements[i].v)/sqrt(gam*R*elements[i].calTemp());
 		file << elements[i].p * (pow((1 + (gam-1)*0.5*machno*machno),(gam/(gam-1)))) <<std::endl;
 	}
 	file<<std::endl;
 	file<<"SCALARS check DOUBLE"<<std::endl;
 	file<<"LOOKUP_TABLE default"<<std::endl;
-	for(int i = 0; i < N_elem; i++) {
+	for(int i = 0; i < printelem; i++) {
 		file << elements[i].check<<std::endl;
 	}
 	file<<std::endl;
 	file<<"VECTORS velocity DOUBLE"<<std::endl;
-	for(int i = 0; i < N_elem; i++) {
+	for(int i = 0; i < printelem; i++) {
+		//if (elements[i].v < 1e-15) file << elements[i].u<<" "<<"0.0"<<" "<<elements[i].w<<std::endl;
 		file << elements[i].u<<" "<<elements[i].v<<" "<<elements[i].w<<std::endl;
 	}
-
+	file<<std::endl;
+	file<<"VECTORS gradp DOUBLE"<<std::endl;
+	for(int i = 0; i < printelem; i++) {
+		file << elements[i].gradp[0]<<" "<<elements[i].gradp[1]<<" "<<"0.0"<<std::endl;
+	}
+	file<<std::endl;
+	file<<"VECTORS gradentropy DOUBLE"<<std::endl;
+	for(int i = 0; i < printelem; i++) {
+		file << elements[i].gradentropy[0]<<" "<<elements[i].gradentropy[1]<<" "<<"0.0"<<std::endl;
+	}
 	file.close();
 }
 

@@ -10,6 +10,7 @@
 #include <tuple>
 #include <assert.h>
 #include <string>
+#include <sstream>
 #include <float.h>
 
 using namespace std;
@@ -170,16 +171,16 @@ void storeNeighbours(std::vector<Point > &points, std::vector<Element > &element
 					F.marker = LEFT;
 				else if( fabs(points[vertex1].x-xright) < DBL_EPSILON && fabs(points[vertex2].x-xright) < DBL_EPSILON ) 
 					F.marker = RIGHT;
-				else if( fabs(points[vertex1].y-ytop) < DBL_EPSILON && fabs(points[vertex2].y-ytop) < DBL_EPSILON) 
-					F.marker = TOP;
-				// else if ((points[vertex1].y) > 0 && (points[vertex2].y) > 0)
+				// else if( fabs(points[vertex1].y-ytop) < DBL_EPSILON && fabs(points[vertex2].y-ytop) < DBL_EPSILON) 
 				// 	F.marker = TOP;
+				else if ((points[vertex1].y) > 0 && (points[vertex2].y) > 0)
+					F.marker = TOP;
 				// else if( fabs(points[vertex1].y-ybottom) < DBL_EPSILON && fabs(points[vertex2].y-ybottom) < DBL_EPSILON && (points[vertex1].x < 0.0 || points[vertex2].x < 0.0) )
 				// 	F.marker = OTHER;
-				else if( fabs(points[vertex1].y-ybottom) < DBL_EPSILON && fabs(points[vertex2].y-ybottom) < DBL_EPSILON)
-					F.marker = BOTTOM;
+				// else if( fabs(points[vertex1].y-ybottom) < DBL_EPSILON && fabs(points[vertex2].y-ybottom) < DBL_EPSILON)
+				// 	F.marker = BOTTOM;
 				else 
-					F.marker = OTHER;
+					F.marker = BOTTOM;
 
 				faces.push_back(F);
 				elements[i].face[j] = faceindex;
@@ -372,7 +373,76 @@ void initializeGeometeryElems(std::vector<Point > &points, std::vector<Element >
 			vol += elements[i].volume;
 		cout << "Volume of the domain: "<< vol << endl;
 	}
-}			
+}	
+
+void populateGrid(std::vector<Point > &points, std::vector<Element > &elements, std::vector<Face > &faces) {
+	char name[50];
+	ifstream file;
+	file.open(restartfile);
+
+	string line;
+	int counter = 0;
+	double vec[4],scalar;
+	int i = 0;
+	int index = 0;
+	Point pt;
+	Element elem;
+	while (getline(file,line)) {
+		counter++;
+		if (counter <= N_pts) {
+			i = 0;	
+			istringstream iss(line); //split the string and store in string streams
+			string word;
+			while(iss >> word) {
+				vec[i] = stod(word);
+				i++;
+			}
+			pt.x = vec[0]; pt.y = vec[1]; pt.z = vec[2];
+			points.push_back(pt);
+		}
+
+		else if (counter > N_pts && counter <= N_pts + N_elem) {
+			i = 0;	
+			istringstream iss(line); 
+			string word;
+			while(iss >> word) {
+				vec[i] = stod(word);
+				i++;
+			}
+			elem.vertex[0] = vec[1]; elem.vertex[1] = vec[2]; elem.vertex[2] = vec[3];
+			elements.push_back(elem);
+		}
+
+		else if (counter > N_pts + N_elem && counter <= N_pts + 2.0*N_elem) continue;
+
+		else if (counter > N_pts + 2.0*N_elem && counter <= N_pts + 3.0*N_elem) {
+			if (ic == 1) elements[index].p = stod(line);
+			index++;
+			if (counter == N_pts + 3.0*N_elem) index = 0;
+		}
+
+		else if (counter > N_pts + 3.0*N_elem && counter <= N_pts + 4.0*N_elem) {
+			if (ic == 1) elements[index].rho = stod(line);
+			index++;
+			if (counter == N_pts + 4.0*N_elem) index = 0;
+		}
+
+		else if (counter > N_pts + 4.0*N_elem && counter <= N_pts + 5.0*N_elem) {
+			i = 0;
+			istringstream iss(line); 
+			string word;
+			while(iss >> word) {
+				vec[i] = stod(word);
+				i++;
+			}
+			if (ic == 1) {
+				elements[index].u = vec[0]; elements[index].v = vec[1]; elements[index].w = vec[2];
+			}
+			index++;
+		}
+	}
+	file.close();
+}		
 #endif
 
 

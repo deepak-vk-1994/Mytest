@@ -225,6 +225,7 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 		elements[i].gradp[0] = elements[i].gradp[1] = 0.0;
 		elements[i].gradk[0] = elements[i].gradk[1] = 0.0;
 		elements[i].gradomega[0] = elements[i].gradomega[1] = 0.0;
+		elements[i].gradentropy[0] = elements[i].gradentropy[1] = 0.0;
 		
 
 		for (int j = 0; j < 3; j++) {
@@ -239,7 +240,7 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 			faces[num].k_face = 0.5 * (elements[EL].k + elements[ER].k);
 			faces[num].omega_face = 0.5 * (elements[EL].omega + elements[ER].omega);
 			faces[num].T_face = 0.5 * (elements[EL].calTemp() + elements[ER].calTemp());
-
+			faces[num].en_face = 0.5 * (elements[EL].calEntropy() + elements[ER].calEntropy());
 
 			if (i == ER) {
 				elements[i].gradu[0] += faces[num].area/elements[i].volume * faces[num].u_face*faces[num].nx;
@@ -256,7 +257,8 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 				elements[i].gradk[1] += faces[num].area/elements[i].volume * faces[num].k_face*faces[num].ny;
 				elements[i].gradomega[0] += faces[num].area/elements[i].volume * faces[num].omega_face*faces[num].nx;
 				elements[i].gradomega[1] += faces[num].area/elements[i].volume * faces[num].omega_face*faces[num].ny;
-
+				elements[i].gradentropy[0] += faces[num].area/elements[i].volume * faces[num].en_face*faces[num].nx;
+				elements[i].gradentropy[1] += faces[num].area/elements[i].volume * faces[num].en_face*faces[num].ny;
             }
 
             else if (i == EL) {
@@ -274,6 +276,8 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 				elements[i].gradk[1] += -1.0*faces[num].area/elements[i].volume * faces[num].k_face*faces[num].ny;
 				elements[i].gradomega[0] += -1.0*faces[num].area/elements[i].volume * faces[num].omega_face*faces[num].nx;
 				elements[i].gradomega[1] += -1.0*faces[num].area/elements[i].volume * faces[num].omega_face*faces[num].ny;
+				elements[i].gradentropy[0] += -1.0*faces[num].area/elements[i].volume * faces[num].en_face*faces[num].nx;
+				elements[i].gradentropy[1] += -1.0*faces[num].area/elements[i].volume * faces[num].en_face*faces[num].ny;
             }
 			
 		}
@@ -313,8 +317,8 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 		xmcR = (*it).xmp - elements[ER].xc; ymcR = (*it).ymp - elements[ER].yc;
 
 		for (int i = 0; i < 6; i++){
-			phiL[i] = elements[EL].phi[i];
-			phiR[i] = elements[ER].phi[i];
+			phiL[i] = 1.0;//elements[EL].phi[i];
+			phiR[i] = 1.0;//elements[ER].phi[i];
 		}
 		
 		//Reconstruction of primitive variables

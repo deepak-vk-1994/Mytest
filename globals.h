@@ -19,10 +19,11 @@ int debug = 0;
 int SIMULATION_TIME;
 int in_flux,ord_accuracy,visc_flux,turbulence,time_int,other;
 std::string gridfile;
+std::string restartfile;
 int mach_switch = 0; //Default Subsonic
 int global_time = 0;
-int N_elem;
-int N_pts;
+int N_elem = 0;
+int N_pts = 0;
 double n_facet = 1.0;
 double xleft,xright,ybottom,ytop,D,chord;
 double p_inf;
@@ -46,10 +47,12 @@ double S1 = 110.4;
 double Pr = 0.72;
 
 int BCL,BCR,BCT,BCB,BCO;
-std::vector<int> bcs;
-std::vector<int>::iterator bcs_it;
-std::vector<int> bcns;
-std::vector<int>::iterator bcns_it;
+int ghostoutput = 0;
+int restart = 0;
+int ic = 0;
+std::vector<int> bcs, bcns;
+std::vector<int>::iterator bcs_it, bcns_it;
+
 void setInputVariables() {
 	std::ifstream file("./Input.txt");
 	std::string line;
@@ -150,7 +153,27 @@ void setInputVariables() {
 	getline (file,line);
 	getline (file,line);
 	BCO = stoi(line);
-	
+	getline (file,line);
+	getline (file,line);
+	ghostoutput = stoi(line);
+	getline (file,line);
+	getline (file,line);
+	restart = stoi(line);
+	if (restart == 1) {
+		getline (file,line);
+		getline (file,line);
+		getline (file,line);
+		restartfile = line;
+		getline (file,line);
+		getline (file,line);
+		N_elem = stoi(line);
+		getline (file,line);
+		getline (file,line);
+		N_pts = stoi(line);
+		getline (file,line);
+		getline (file,line);
+		ic = stoi(line);
+	}
 	chord = D;
 	p_inf = p0/(pow((1 + (gam-1)*0.5*M*M),(gam/(gam-1))));
 	rho_inf = rho0/(pow((1 + (gam-1)*0.5*M*M),(1/(gam-1))));
