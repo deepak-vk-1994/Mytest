@@ -317,8 +317,8 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 		xmcR = (*it).xmp - elements[ER].xc; ymcR = (*it).ymp - elements[ER].yc;
 
 		for (int i = 0; i < 6; i++){
-			phiL[i] = 1.0;//elements[EL].phi[i];
-			phiR[i] = 1.0;//elements[ER].phi[i];
+			phiL[i] = elements[EL].phi[i];
+			phiR[i] = elements[ER].phi[i];
 		}
 		
 		//Reconstruction of primitive variables
