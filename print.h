@@ -4,10 +4,11 @@
 #include<math.h>
 
 
-void printFlow(std::vector<Point > &points, std::vector<Element > &elements, int t) {
+void printFlow(std::vector<Point > &points, std::vector<Element > &elements, std::vector<Face > &faces, int t) {
 
 	char name[250];
 	double machno;
+    int chk;
 	ofstream file;
 	double printelem,printpts;
 
@@ -108,10 +109,20 @@ void printFlow(std::vector<Point > &points, std::vector<Element > &elements, int
 		file << elements[i].p * (pow((1 + (gam-1)*0.5*machno*machno),(gam/(gam-1)))) <<std::endl;
 	}
 	file<<std::endl;
-	file<<"SCALARS check DOUBLE"<<std::endl;
+    if (!ghostoutput) {
+	    file<<"SCALARS check DOUBLE"<<std::endl;
+    	file<<"LOOKUP_TABLE default"<<std::endl;
+	    for(int i = 0; i < printelem; i++) {
+            chk = 0;
+            for(int j = 0; j < 3; j++) chk+=faces[elements[i].face[j]].marker;
+		    file <<chk<<std::endl;
+	    }
+	    file<<std::endl;
+    }
+	file<<"SCALARS entropy_err DOUBLE"<<std::endl;
 	file<<"LOOKUP_TABLE default"<<std::endl;
 	for(int i = 0; i < printelem; i++) {
-		file << elements[i].check<<std::endl;
+		file << elements[i].calEntropy() - Entropy_inf<<std::endl;
 	}
 	file<<std::endl;
 	file<<"VECTORS velocity DOUBLE"<<std::endl;
@@ -124,6 +135,28 @@ void printFlow(std::vector<Point > &points, std::vector<Element > &elements, int
 	for(int i = 0; i < printelem; i++) {
 		file << elements[i].gradp[0]<<" "<<elements[i].gradp[1]<<" "<<"0.0"<<std::endl;
 	}
+       
+	file<<std::endl;    
+	file<<"FIELD Limiter 6"<<std::endl;
+    file<<"0 1 "<<printelem<<" DOUBLE"<<std::endl;
+    for(int i = 0; i < printelem; i++) file<<elements[i].phi[0]<<std::endl;
+    file<<"1 1 "<<printelem<<" DOUBLE"<<std::endl;
+    for(int i = 0; i < printelem; i++) file<<elements[i].phi[1]<<std::endl;
+    file<<"2 1 "<<printelem<<" DOUBLE"<<std::endl;
+    for(int i = 0; i < printelem; i++) file<<elements[i].phi[2]<<std::endl;
+    file<<"3 1 "<<printelem<<" DOUBLE"<<std::endl;
+    for(int i = 0; i < printelem; i++) file<<elements[i].phi[3]<<std::endl;
+    file<<"4 1 "<<printelem<<" DOUBLE"<<std::endl;
+    for(int i = 0; i < printelem; i++) file<<elements[i].phi[4]<<std::endl;
+    file<<"5 1 "<<printelem<<" DOUBLE"<<std::endl;
+    for(int i = 0; i < printelem; i++) file<<elements[i].phi[5]<<std::endl;
+    /*
+	for(int i = 0; i < printelem; i++) {
+		for(int j = 0; j < 5; j++) file << elements[i].residue[j]<<" ";
+        ////file<<elements[i].residue[0]<<" "<<elements[i].residue[1]<<" "<<elements[i].residue[2]<<" "<<elements[i].residue[3]<<" "<<elements[i].residue[4]<<" ";
+        file<<elements[i].residue[5]<<std::endl;
+	}
+    */
 	file<<std::endl;
 	file<<"VECTORS gradentropy DOUBLE"<<std::endl;
 	for(int i = 0; i < printelem; i++) {
@@ -367,5 +400,76 @@ void extractFromLine(std::vector<Point > &points, std::vector<Element > &element
 		ofile2 << (*it).first << " " << (*it).second << std::endl;
 	}
 }
+
+void printEntropy(std::vector<Element> &elements,std::ofstream &file) {
+
+    double entropyproduction = 0.0;
+    double S = 0.0;
+    double vol = 0.0;
+    for (int i = 0; i < N_elem; i++) {
+        // S = (elements[i].p/p_inf * pow((rho_inf/elements[i].rho),gam)) - 1.0;
+        S  = elements[i].calEntropy() - Entropy_inf;
+        entropyproduction += S*S*elements[i].volume;
+        vol += elements[i].volume;
+    }
+    file << sqrt(entropyproduction/vol) << std::endl;
+}
+
+void printCellSize(std::vector<Point > &points, std::vector<Element > &elements) {
+    double vol = 0.0;
+    double min = elements[0].volume;
+    int vertex1,vertex2,vertex3;
+    double x1,y1,z1,x2,y2,z2,x3,y3,z3,a,b,c,s,distance;
+    for (int i = 0; i < N_elem; i++) {
+        vol += (elements[i].volume);
+    }
+    for (int i = 1; i < N_elem; i++) {
+        if (elements[i].volume < min) min = elements[i].volume;
+    }
+    std::cout << "\nAverage element size: " << vol/N_elem << " Min: " << min << std::endl;
+}
+
+void printrestartfile(std::vector<Point > &points, std::vector<Element > &elements, int t) {
+
+	char name[250];
+	ofstream file;
+	double printelem,printpts;
+
+	if (ghostoutput == 1) {
+		printelem = elements.size();
+		printpts = points.size();
+	}
+	else {
+		printelem = N_elem;
+		printpts = N_pts;
+	}
+
+	if (ord_accuracy == HO) 
+		sprintf(name,"./restart/BGhigh-%d.vtk",t);
+	else	
+		sprintf(name,"./restart/BG-%d.vtk",t);
+
+	file.open(name);
+	for (int i = 0; i < printpts; i++) {
+		file<<points[i].x<<" "<<points[i].y<<" "<<points[i].z<<std::endl;
+	}
+	for (int i = 0; i < printelem; i++) {
+		file <<"3 "<<elements[i].vertex[0]<<" "<<elements[i].vertex[1]<<" "<<elements[i].vertex[2]<<std::endl;
+	}
+	for(int i = 0; i < printelem; i++) {
+		file << elements[i].p<<std::endl;
+	}
+	for(int i = 0; i < printelem; i++) {
+		file << elements[i].p<<std::endl;
+	}
+	for(int i = 0; i < printelem; i++) {
+		file << elements[i].rho<<std::endl;
+	}
+	for(int i = 0; i < printelem; i++) {
+		file << elements[i].u<<" "<<elements[i].v<<" "<<elements[i].w<<std::endl;
+	}
+	file.close();
+}
+
 
 #endif

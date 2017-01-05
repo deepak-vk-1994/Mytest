@@ -61,6 +61,7 @@ inline void calLimiters(int index, std::vector<Point > &points, std::vector<Elem
 		qmin[5] = minimum(elements[nbour[0]].omega,elements[nbour[1]].omega,elements[nbour[2]].omega,elements[index].omega);
 
 		for (int i = 0; i < 3; i++) {
+            if (limiter == ORG) {
 			xmc = faces[elements[index].face[i]].xmp - elements[index].xc;
 			ymc = faces[elements[index].face[i]].ymp - elements[index].yc;
 			dot[0] = elements[index].gradrho[0]*xmc + elements[index].gradrho[1]*ymc;
@@ -69,16 +70,17 @@ inline void calLimiters(int index, std::vector<Point > &points, std::vector<Elem
 			dot[3] = elements[index].gradp[0]*xmc + elements[index].gradp[1]*ymc;
 			dot[4] = elements[index].gradk[0]*xmc + elements[index].gradk[1]*ymc;
 			dot[5] = elements[index].gradomega[0]*xmc + elements[index].gradomega[1]*ymc;
-
-			// xmc = points[elements[index].vertex[i]].x - elements[index].xc;
-			// ymc = points[elements[index].vertex[i]].y - elements[index].yc;
-			// dot[0] = elements[index].rho + (elements[index].gradrho[0]*xmc + elements[index].gradrho[1]*ymc) - q[0];
-			// dot[1] = elements[index].u + (elements[index].gradu[0]*xmc + elements[index].gradu[1]*ymc) - q[1];
-			// dot[2] = elements[index].v + (elements[index].gradv[0]*xmc + elements[index].gradv[1]*ymc) - q[2];
-			// dot[3] = elements[index].p + (elements[index].gradp[0]*xmc + elements[index].gradp[1]*ymc) - q[3];
-			// dot[4] = elements[index].k + (elements[index].gradk[0]*xmc + elements[index].gradk[1]*ymc) - q[4];
-			// dot[5] = elements[index].omega + (elements[index].gradomega[0]*xmc + elements[index].gradomega[1]*ymc) - q[5];
-
+            }
+            else if (limiter == MOD) {
+			xmc = points[elements[index].vertex[i]].x - elements[index].xc;
+			ymc = points[elements[index].vertex[i]].y - elements[index].yc;
+			dot[0] = elements[index].rho + (elements[index].gradrho[0]*xmc + elements[index].gradrho[1]*ymc) - q[0];
+			dot[1] = elements[index].u + (elements[index].gradu[0]*xmc + elements[index].gradu[1]*ymc) - q[1];
+			dot[2] = elements[index].v + (elements[index].gradv[0]*xmc + elements[index].gradv[1]*ymc) - q[2];
+			dot[3] = elements[index].p + (elements[index].gradp[0]*xmc + elements[index].gradp[1]*ymc) - q[3];
+			dot[4] = elements[index].k + (elements[index].gradk[0]*xmc + elements[index].gradk[1]*ymc) - q[4];
+			dot[5] = elements[index].omega + (elements[index].gradomega[0]*xmc + elements[index].gradomega[1]*ymc) - q[5];
+            }
 
 			for (int j = 0; j < 6; j++) {
 				delmax = qmax[j] - q[j];
@@ -281,8 +283,8 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
             }
 			
 		}
-
-		calLimiters(i,points,elements,faces,elements[i].phi);
+        if (!limiter) for (int j = 0; j < 6; j++) elements[i].phi[j] = 1.0; 
+        else if (limiter != FACE) calLimiters(i,points,elements,faces,elements[i].phi);
 
 		if (turbulence == SST) {
 			elements[i].calF1();
@@ -323,10 +325,10 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 		
 		//Reconstruction of primitive variables
 		//First Order
-
-		// calLimitersFace(EL,it - faces.begin(),points,elements,faces,phiL);
-		// calLimitersFace(ER,it - faces.begin(),points,elements,faces,phiR);
-
+        if (limiter == FACE) {
+    		calLimitersFace(EL,it - faces.begin(),points,elements,faces,phiL);
+	    	calLimitersFace(ER,it - faces.begin(),points,elements,faces,phiR);
+        }
 		if (ord_accuracy == FO) {
 			rhoL = elements[EL].rho;
 			rhoR = elements[ER].rho;
@@ -356,6 +358,16 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 			omegaL = elements[EL].omega + phiL[5]*(elements[EL].gradomega[0]*xmcL + elements[EL].gradomega[1]*ymcL);
 			omegaR = elements[ER].omega + phiR[5]*(elements[ER].gradomega[0]*xmcR + elements[ER].gradomega[1]*ymcR);
 		}
+        
+        if (boundary_order == BSO)
+        if ((*it).marker != INTERIOR){
+            rhoL = 0.5*(elements[EL].rho+elements[ER].rho);
+            uL = 0.5*(elements[EL].u+elements[ER].u);
+            vL = 0.5*(elements[EL].v+elements[ER].v);
+            pL = 0.5*(elements[EL].p+elements[ER].p);
+            kL = 0.5*(elements[EL].k+elements[ER].k);
+            omegaL = 0.5*(elements[EL].omega+elements[ER].omega);
+        }
 
 		TL = pL/(rhoL*R);
 		TR = pR/(rhoR*R);

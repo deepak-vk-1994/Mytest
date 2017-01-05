@@ -72,6 +72,9 @@ void populateFromNastran(std::vector<Point > &points, std::vector<Element > &ele
 	//TODO
 }
 
+inline double radius(Point v1){
+    return sqrt(v1.x*v1.x+v1.y*v1.y); 
+}
 void storeNeighbours(std::vector<Point > &points, std::vector<Element > &elements, std::vector<Face > &faces) {
 	std::pair<int,int> face,edge_reverse,index_elem;
 	//face pair, reverse of the face pair, and index_elem keeps track of the triangle index and the vertex index
@@ -166,21 +169,28 @@ void storeNeighbours(std::vector<Point > &points, std::vector<Element > &element
 				F.vertex2 = vertex2;
 				F.elementL = -1;
 				F.elementR = i;
-				
-				if( fabs(points[vertex1].x-xleft) < DBL_EPSILON && fabs(points[vertex2].x-xleft) < DBL_EPSILON) 
-					F.marker = LEFT;
-				else if( fabs(points[vertex1].x-xright) < DBL_EPSILON && fabs(points[vertex2].x-xright) < DBL_EPSILON ) 
-					F.marker = RIGHT;
-				// else if( fabs(points[vertex1].y-ytop) < DBL_EPSILON && fabs(points[vertex2].y-ytop) < DBL_EPSILON) 
-				// 	F.marker = TOP;
-				else if ((points[vertex1].y) > 0 && (points[vertex2].y) > 0)
-					F.marker = TOP;
-				// else if( fabs(points[vertex1].y-ybottom) < DBL_EPSILON && fabs(points[vertex2].y-ybottom) < DBL_EPSILON && (points[vertex1].x < 0.0 || points[vertex2].x < 0.0) )
-				// 	F.marker = OTHER;
-				// else if( fabs(points[vertex1].y-ybottom) < DBL_EPSILON && fabs(points[vertex2].y-ybottom) < DBL_EPSILON)
-				// 	F.marker = BOTTOM;
-				else 
+/*				
+				if( fabs(points[vertex1].x-xleft) < DBL_EPSILON && fabs(points[vertex2].x-xleft) < DBL_EPSILON)
+                    F.marker = LEFT;
+                else if( fabs(points[vertex1].x-xright) < DBL_EPSILON && fabs(points[vertex2].x-xright) < DBL_EPSILON )
+                    F.marker = RIGHT;
+                // else if( fabs(points[vertex1].y-ytop) < DBL_EPSILON && fabs(points[vertex2].y-ytop) < DBL_EPSILON) 
+                //  F.marker = TOP;
+                else if ((points[vertex1].y) > 0 && (points[vertex2].y) > 0)
+                    F.marker = TOP;
+                // else if( fabs(points[vertex1].y-ybottom) < DBL_EPSILON && fabs(points[vertex2].y-ybottom) < DBL_EPSILON && (points[vertex1].x < 0.0 || points[vertex2].x < 0.0) )
+                //  F.marker = OTHER;
+                // else if( fabs(points[vertex1].y-ybottom) < DBL_EPSILON && fabs(points[vertex2].y-ybottom) < DBL_EPSILON)
+                //  F.marker = BOTTOM;
+                else
+                    F.marker = BOTTOM;
+
+*/
+
+				if( fabs(radius(points[vertex1])-xleft)/xleft < 0.01 ) 
 					F.marker = BOTTOM;
+				else if( fabs(radius(points[vertex1])-xright)/xright < 0.01 ) 
+					F.marker = (points[vertex1].x*points[vertex2].x<0.04*xright*xright ? OTHER : (points[vertex1].x<0 ? LEFT : RIGHT ));
 
 				faces.push_back(F);
 				elements[i].face[j] = faceindex;
@@ -374,6 +384,126 @@ void initializeGeometeryElems(std::vector<Point > &points, std::vector<Element >
 		cout << "Volume of the domain: "<< vol << endl;
 	}
 }	
+
+
+void populateFromCustom(std::vector<Point > &points, std::vector<Element > &elements) {
+    ifstream file(gridfile);
+    double coord1,coord2,coord3;
+
+    Point pt;
+    Element elem;
+    int ne,np,nf;
+    // //coarse
+    if (gridfile == "./Grids/coarsecylinder.txt") {
+        ne = 135;
+        np = 216;
+    }
+
+    // //medium
+    else if (gridfile == "./Grids/mediumcylinder.txt") {
+        ne = 519;
+        np = 808;
+    }
+
+    //fine
+    else if (gridfile == "./Grids/finecylinder.txt") {
+        ne = 2055;
+        np = 3144;
+    }
+
+    //vfine
+    else if (gridfile == "./Grids/vfinecylinder.txt") {
+        ne = 8199;
+        np = 12424;
+    }
+
+    else cout << "WHAT?";
+    
+    string line;
+    int check = 1;
+    double coord[3];
+    int ptindex[4];
+    getline(file,line);
+    getline(file,line);
+    getline(file,line);
+    getline(file,line);
+    getline(file,line);
+    getline(file,line);
+    getline(file,line);
+
+    int index = 7;
+    int rowindex = 0;
+    while (index < ne) {
+        getline(file,line);
+        istringstream iss(line); 
+        string word;
+        rowindex = 0;
+        while(iss >> word) {
+            if (rowindex > 3) break;    
+            check = 1;
+            try {
+                stod(word);   //string to double
+            }
+            catch(const std::invalid_argument& e) {
+                check = 0;
+            }
+            if (check != 0) {
+                ptindex[rowindex] = stod(word)-1;
+                rowindex++;
+            }
+        }
+        elem.vertex[0] = ptindex[1];
+        elem.vertex[1] = ptindex[2];
+        elem.vertex[2] = ptindex[3];
+        elements.push_back(elem);
+        index++;
+    }
+    getline(file,line);
+    index++;
+    while (index < np) {
+        getline(file,line);
+        istringstream iss(line); 
+        string word;
+        rowindex = 0;
+        while(iss >> word) {
+            if (rowindex > 2) break;    
+            check = 1;
+            try {
+                stod(word);   //string to double
+            }
+            catch(const std::invalid_argument& e) {
+                check = 0;
+            }
+            if (check != 0) {
+                coord[rowindex] = stod(word);
+                rowindex++;
+            }
+        }
+        pt.x = coord[1]; 
+        pt.y = coord[2];
+        pt.z = 0.0;
+        points.push_back(pt);
+        index++;
+    }
+
+    file.close();
+    N_elem = elements.size();
+    N_pts = points.size();
+    if (debug == 1) {
+        ofstream ofile("./Debug/elements.txt");
+        for (int i = 0; i < N_elem; i++) {
+            // ofile << points[elements[i].vertex[0]].x<<" "<<points[elements[i].vertex[0]].y<<" "<<points[elements[i].vertex[0]].z<<endl;
+            // ofile << points[elements[i].vertex[1]].x<<" "<<points[elements[i].vertex[1]].y<<" "<<points[elements[i].vertex[1]].z<<endl;
+            // ofile << points[elements[i].vertex[2]].x<<" "<<points[elements[i].vertex[2]].y<<" "<<points[elements[i].vertex[2]].z<<endl;
+            ofile << elements[i].vertex[0] << " " << elements[i].vertex[1] << " " << elements[i].vertex[2] << endl;
+        }
+        ofstream ofile2("./Debug/points.txt");
+        for (int i = 0; i < N_pts; i++) {
+            ofile2 << points[i].x<<" "<<points[i].y<<" "<<points[i].z<<endl;
+        }
+    }
+    //ofile.close();
+}
 
 void populateGrid(std::vector<Point > &points, std::vector<Element > &elements, std::vector<Face > &faces) {
 	char name[50];

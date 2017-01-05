@@ -7,13 +7,14 @@
 #include "fluxcal.h"
 
 inline void applyBCface(std::vector<Element > &elements, int indexL, int indexR, int BCno,int mach_switch, double nx, double ny) {
-	if (mach_switch == SUBSONIC) {
+    double ep = 1.0e-10;
+    if (mach_switch == SUBSONIC) {
 		if (BCno == INLET) {
 			elements[indexL].p = elements[indexR].p;
 			elements[indexL].u = u_inf;
 			elements[indexL].v = v_inf;
 			elements[indexL].w = w_inf;
-			elements[indexL].rho = rho_inf;
+			elements[indexL].rho = rho_inf*elements[indexR].p/p_inf;
 			elements[indexL].k = k_inf;
 			elements[indexL].omega = omega_inf;
 			elements[indexL].mu_t = elements[indexR].mu_t;
@@ -24,7 +25,7 @@ inline void applyBCface(std::vector<Element > &elements, int indexL, int indexR,
 			elements[indexL].u = elements[indexR].u;
 			elements[indexL].v = elements[indexR].v;
 			elements[indexL].w = elements[indexR].w;
-			elements[indexL].rho = elements[indexR].rho;
+			elements[indexL].rho = elements[indexR].rho*p_inf/elements[indexR].p;
 			elements[indexL].k = elements[indexR].k;
 			elements[indexL].omega = elements[indexR].omega;
 			elements[indexL].mu_t = elements[indexR].mu_t;
@@ -51,8 +52,41 @@ inline void applyBCface(std::vector<Element > &elements, int indexL, int indexR,
 			elements[indexL].F1 = elements[indexR].F1;
 			elements[indexL].omega = 2.0*omega_wall - elements[indexR].omega;
 		}
-	}
-
+	    else if (BCno == INF) {
+            elements[indexL].rho = elements[indexR].rho;
+            elements[indexL].p = p_inf;
+            elements[indexL].u = u_inf;
+            elements[indexL].v = v_inf;
+            elements[indexL].k = k_inf;
+            elements[indexL].mu_t = elements[indexR].mu_t;
+            elements[indexL].F1 = elements[indexR].F1;
+            elements[indexL].omega = omega_inf;
+        }
+		if (BCno == NRINLET) {
+			elements[indexL].p = elements[indexR].p;
+            elements[indexL].u = (-(u_inf*nx+v_inf*ny)+(p_inf-elements[indexR].p)/(rho_inf*c_inf))/(-nx);
+            //elements[indexL].v = ((u_inf*nx+v_inf*ny)+(p_inf-elements[indexR].p)/(rho_inf*c_inf))/ny;
+			elements[indexL].v = v_inf;
+			elements[indexL].w = w_inf;
+			elements[indexL].rho = rho_inf+(elements[indexR].p-p_inf)/(c_inf*c_inf);
+			elements[indexL].k = k_inf;
+			elements[indexL].omega = omega_inf;
+			elements[indexL].mu_t = elements[indexR].mu_t;
+			elements[indexL].F1 = elements[indexR].F1;
+        }
+		if (BCno == NROUTLET) {
+			elements[indexL].p = p_inf+rho_inf*c_inf*((elements[indexR].u-u_inf)*nx+(elements[indexR].v-v_inf)*ny);
+			elements[indexL].u = elements[indexR].u;
+			elements[indexL].v = elements[indexR].v;
+			elements[indexL].w = elements[indexR].w;
+			//elements[indexL].rho = elements[indexR].rho*p_inf/elements[indexR].p;
+			elements[indexL].rho = elements[indexR].rho;
+			elements[indexL].k = elements[indexR].k;
+			elements[indexL].omega = elements[indexR].omega;
+			elements[indexL].mu_t = elements[indexR].mu_t;
+			elements[indexL].F1 = elements[indexR].F1;
+        }
+    }
 	else if (mach_switch == SUPERSONIC) {
 		if (BCno == INLET) {
 			elements[indexL].p = p_inf;
@@ -127,7 +161,14 @@ void applyBC(std::vector<Point > &points, std::vector<Element > &elements, std::
 			applyBCface(elements,(*it).elementL,(*it).elementR,BCB,mach_switch,(*it).nx,(*it).ny);
 		}
 		else if ((*it).marker == OTHER) {
-			applyBCface(elements,(*it).elementL,(*it).elementR,BCO,mach_switch,(*it).nx,(*it).ny);
+            if (BCO == SWITCH) {
+            if (elements[(*it).elementR].u*(*it).nx+elements[(*it).elementR].v*(*it).ny > 0)
+			    applyBCface(elements,(*it).elementL,(*it).elementR,NROUTLET,mach_switch,(*it).nx,(*it).ny);
+            else
+			    applyBCface(elements,(*it).elementL,(*it).elementR,NRINLET,mach_switch,(*it).nx,(*it).ny);
+            }
+            else
+                applyBCface(elements,(*it).elementL,(*it).elementR,BCO,mach_switch,(*it).nx,(*it).ny);
 		}
 	}
 

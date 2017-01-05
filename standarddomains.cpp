@@ -15,19 +15,20 @@ double ytop = 2.0;
 // double ybottom = 0.0;
 
 //Obliqueshock
-double D=1;
-double xleft = -1.0;
-double xright = 0.965926;
-double ytop = 1.0; 
-double ybottom = 0.0;
+//double D=1;
+//double xleft = -1.0;
+//double xright = 0.965926;
+//double ytop = 1.0; 
+//double ybottom = 0.0;
 
 
 //CYLINDER
-// double D = 0.01;
-// double xleft = -5.5*D;
-// double xright = 20.5*D;
-// double ybottom = -5*D;
-// double ytop = 5*D;
+double D = 0.01;
+double xleft = -5.5*D;
+double xright = 20.5*D;
+double ybottom = -5*D;
+double ytop = 5*D;
+
 
 //Poiseuelle
 /*

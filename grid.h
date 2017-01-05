@@ -23,7 +23,11 @@ class Element {
 		double p_temp,u_temp,v_temp,w_temp,rho_temp;
 		double k_temp,omega_temp;
 		double F1,mu_t;
-		//Other variables
+		
+        //Residual varibales
+        //double residentropy;
+
+        //Other variables
 		double source1,source2,beta; //magnitude of vorticity
 
 		//Gradients

@@ -8,28 +8,31 @@
 
 enum type{INTERIOR,LEFT,RIGHT,TOP,BOTTOM,OTHER};
 enum mach{SUBSONIC,SUPERSONIC};
-enum BC{INLET,OUTLET,SLIP,NO_SLIP};
+enum BC{INLET,OUTLET,SLIP,NO_SLIP,INF,SWITCH,NRINLET,NROUTLET};
 enum inviscidflux{AUSM};
 enum accuracyorder{FO,HO,RK4};
 enum viscous{NO_VISC};
 enum turbu{NO_TURB,SST};
 enum other{PI};
+enum limitor{ORG=1,MOD,FACE};
+enum bdy_order{BFO,BSO};
 
 int debug = 0;
-int SIMULATION_TIME;
-int in_flux,ord_accuracy,visc_flux,turbulence,time_int,other;
+int SIMULATION_TIME, PRINT_TIME;
+int in_flux,ord_accuracy,visc_flux,turbulence,time_int,other,limiter=0,boundary_order;
 std::string gridfile;
 std::string restartfile;
 int mach_switch = 0; //Default Subsonic
 int global_time = 0;
 int N_elem = 0;
 int N_pts = 0;
-double n_facet = 1.0;
+int n_facet = 1;
 double xleft,xright,ybottom,ytop,D,chord;
 double p_inf;
 double rho_inf;
 double p0,rho0,M;
 double u_inf = 0.0; 
+double c_inf = 0.0; 
 double v_inf = 0.0; 
 double w_inf = 0.0;
 double k_inf = 0.0;
@@ -45,6 +48,7 @@ double mu_ref;
 double T_ref;
 double S1 = 110.4; 
 double Pr = 0.72;
+double Entropy_inf = 0.0;
 
 int BCL,BCR,BCT,BCB,BCO;
 int ghostoutput = 0;
@@ -102,6 +106,9 @@ void setInputVariables() {
 	SIMULATION_TIME = stoi(line);
 	getline (file,line);
 	getline (file,line);
+	PRINT_TIME = stoi(line);
+	getline (file,line);
+	getline (file,line);
 	mach_switch = stoi(line);
 	getline (file,line);
 	getline (file,line);
@@ -115,6 +122,20 @@ void setInputVariables() {
 	else {
 		ord_accuracy = HO;
 	}
+	getline (file,line);
+	getline (file,line);
+	if (line == "ORG") 
+		limiter = ORG;
+	if (line == "MOD") 
+		limiter = MOD;
+    if (line == "FACE")
+        limiter = FACE;
+	getline (file,line);
+	getline (file,line);
+	if (line == "SO")
+		boundary_order = BSO;
+	else
+		boundary_order = BFO;
 	getline (file,line);
 	getline (file,line);
 	if (line == "HO")
@@ -178,7 +199,9 @@ void setInputVariables() {
 	p_inf = p0/(pow((1 + (gam-1)*0.5*M*M),(gam/(gam-1))));
 	rho_inf = rho0/(pow((1 + (gam-1)*0.5*M*M),(1/(gam-1))));
 	u_inf = M*sqrt(gam*p_inf/rho_inf);
+    c_inf = sqrt(gam*p_inf/rho_inf);
 	T_inf = p_inf/(rho_inf*R);
+    Entropy_inf = p_inf/pow(rho_inf,gam);
 	visc_inf = ( mu_ref * pow((T_inf/T_ref),1.5) * (T_ref + S1)/(T_inf + S1) );
 	nu_inf = visc_inf/rho_inf;
 	k_inf = 1.5*(0.05*u_inf)*(0.05*u_inf);
