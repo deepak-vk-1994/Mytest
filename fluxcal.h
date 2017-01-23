@@ -282,7 +282,8 @@ void calFlux(std::vector<Point > &points, std::vector<Element > &elements, std::
 			
 		}
 
-		calLimiters(i,points,elements,faces,elements[i].phi);
+        for (int j=0;j<6;j++) elements[i].phi[j] = 1.0;
+		//calLimiters(i,points,elements,faces,elements[i].phi);
 
 		if (turbulence == SST) {
 			elements[i].calF1();
