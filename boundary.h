@@ -225,9 +225,11 @@ void getE(std::vector<Element > &elements, std::vector<Face > &faces,int index) 
 void update(std::vector<Element > &elements,std::vector<Face > &faces,int stage) {
 	for (int i = 0; i < N_elem; i++) {
 		elements[i].rho = elements[i].rho_temp + elements[i].E[stage][0];
+        if (elements[i].rho < 0.0) elements[i].rho = elements[i].rho_temp;
 		elements[i].u = elements[i].u_temp + elements[i].E[stage][1];
 		elements[i].v = elements[i].v_temp + elements[i].E[stage][2];
-		elements[i].p = elements[i].p_temp + elements[i].E[stage][3];
+        elements[i].p = elements[i].p_temp + elements[i].E[stage][3];
+        if (elements[i].p < 0.0) elements[i].p = elements[i].p_temp;
 		if (turbulence != NO_TURB) {
 			elements[i].k = elements[i].k_temp + elements[i].E[stage][4];
 			elements[i].omega = elements[i].omega_temp + elements[i].E[stage][5];
